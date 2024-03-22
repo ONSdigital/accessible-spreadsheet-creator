@@ -19,17 +19,33 @@ function cellRef(col, row) {
 	return intToLetter(Math.floor(zeroBasedCol / 26) - 1) + intToLetter(zeroBasedCol % 26) + row;
 }
 
-function formatValues(values, style) {
+function formatValues(values, style, allowNulls) {
 	if (style === 'text') {
+		if (allowNulls) {
+			throw new Error('allowNulls is not implemented for string columns.');
+		}
+
 		return values.map(d => ({isText: true, displayValue: d}));
 	}
 
+	if (!allowNulls && values.includes(null)) {
+		throw new Error('A null value exists in a column without allowNulls.');
+	}
+
 	if (style === 'number_with_commas') {
-		return values.map(d => ({isNumeric: true, rawValue: d, displayValue: d.toLocaleString('en-GB'), style}));
+		return values.map(d => (
+			d === null
+				? {isEmptyNumeric: true, style}
+				: {isNumeric: true, rawValue: d, displayValue: d.toLocaleString('en-GB'), style}
+		));
 	}
 
 	if (style === 'number_1dp') {
-		return values.map(d => ({isNumeric: true, rawValue: d, displayValue: d.toFixed(1), style}));
+		return values.map(d => (
+			d === null
+				? {isEmptyNumeric: true, style}
+				: {isNumeric: true, rawValue: d, displayValue: d.toFixed(1), style}
+		));
 	}
 
 	throw new Error('Unrecognised column style: ' + style);
@@ -99,7 +115,8 @@ function processNotes(sourceNotes, sheets) {
 }
 
 function columnWidth(strings) {
-	const maxPixelWidth = Math.max(...strings.map(d => approxTextWidth(d)));
+	strings = strings.map(s => s || '');
+	const maxPixelWidth = Math.max(...strings.map(s => approxTextWidth(s)));
 	// 37.8 pixels per cm, and add a bit in case the width is inaccurate:
 	return ((maxPixelWidth / 37.8) + 0.5).toFixed(2);
 }
@@ -190,7 +207,7 @@ export default function createZip(odsData) {
 		sheet.lastTableCell = cellRef(sheet.columns.length, 2 + sheet.columns[0].values.length + sheet.sheetIntroText.length);
 
 		for (const column of sheet.columns) {
-			column.valuesFormatted = formatValues(column.values, column.style);
+			column.valuesFormatted = formatValues(column.values, column.style, column.allowNulls);
 			column.isNumeric = column.style !== 'text';
 			column.headingLines = column.heading.split('\n');
 		}

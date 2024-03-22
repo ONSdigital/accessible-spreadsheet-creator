@@ -228,6 +228,9 @@
             <text:p>{{displayValue}}</text:p>
           </table:table-cell>
 {{/isNumeric}}
+{{#isEmptyNumeric}}
+          <table:table-cell table:style-name="cell_{{style}}"/>
+{{/isEmptyNumeric}}
 {{/cellsInRow}}
         </table:table-row>
 {{/rows}}

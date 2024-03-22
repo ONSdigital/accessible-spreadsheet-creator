@@ -74,8 +74,9 @@ const odsData = {
 				},
 				{
 					style: "number_1dp",
+					allowNulls: true,
 					heading: "England and Wales with a really long title\n(units)",
-					values: [45.6, 45.6, 45.6],
+					values: [45.6, null, 45.6],
 				},
 			],
 		},

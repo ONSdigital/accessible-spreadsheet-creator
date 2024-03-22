@@ -1,4 +1,4 @@
-export default 
+export default
 {
 	"$id": "https://github.com/jtrim-ons/accessible-spreadsheet-creator",
 	"title": "Accessible Spreadsheet Creator",
@@ -82,6 +82,11 @@ export default
 									"title": "Number/text style",
 									"description": "'text'=text column; 'number_with_commas': integers with thousand separator; 'number_1dp': numbers to 1 decimal place"
 								},
+								"allowNulls": {
+									"type": "boolean",
+									"title": "Allow null values?",
+									"description": "If true, allow null values for empty cells."
+								},
 								"heading": {
 									"type": "string",
 									"title": "Column heading",
@@ -92,8 +97,15 @@ export default
 									"title": "Column values",
 									"description": "An array of text or numeric values",
 									"anyOf": [
-										{ "items": { "type": "number" } },
-										{ "items": { "type": "string" } }
+										{ "items": { "type": "string" } },
+										{
+											"items": {
+												"anyOf": [
+													{ "type": "number" },
+													{ "type": "null" }
+												]
+											}
+										}
 									]
 								}
 							},
