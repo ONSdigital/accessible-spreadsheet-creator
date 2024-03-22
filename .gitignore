@@ -3,3 +3,4 @@ yarn.lock
 .DS_store
 out.zip
 out.ods
+.~lock*
