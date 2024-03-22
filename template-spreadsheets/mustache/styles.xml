@@ -14,6 +14,9 @@
     <number:number-style style:name="N111">
       <number:number number:decimal-places="1" number:min-decimal-places="1" number:min-integer-digits="1"/>
     </number:number-style>
+    <number:number-style style:name="N112">
+      <number:number number:decimal-places="2" number:min-decimal-places="2" number:min-integer-digits="2"/>
+    </number:number-style>
     <number:number-style style:name="number_with_commas">
       <number:number number:decimal-places="0" number:min-decimal-places="0" number:min-integer-digits="1" number:grouping="true"/>
     </number:number-style>

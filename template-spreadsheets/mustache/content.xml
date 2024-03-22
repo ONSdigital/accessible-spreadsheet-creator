@@ -64,6 +64,7 @@
     </style:style>
     <style:style style:name="cell_hyperlink" style:family="table-cell" style:parent-style-name="Hyperlink"/>
     <style:style style:name="cell_number_1dp" style:family="table-cell" style:parent-style-name="Default" style:data-style-name="N111"/>
+    <style:style style:name="cell_number_2dp" style:family="table-cell" style:parent-style-name="Default" style:data-style-name="N112"/>
     <style:style style:name="cell_number_with_commas" style:family="table-cell" style:parent-style-name="Default" style:data-style-name="number_with_commas"/>
   </office:automatic-styles>
   <office:body>

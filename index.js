@@ -48,6 +48,14 @@ function formatValues(values, style, allowNulls) {
 		));
 	}
 
+	if (style === 'number_2dp') {
+		return values.map(d => (
+			d === null
+				? {isEmptyNumeric: true, style}
+				: {isNumeric: true, rawValue: d, displayValue: d.toFixed(2), style}
+		));
+	}
+
 	throw new Error('Unrecognised column style: ' + style);
 }
 
