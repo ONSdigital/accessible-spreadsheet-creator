@@ -124,7 +124,11 @@ function processNotes(sourceNotes, sheets) {
 
 function columnWidth(strings) {
 	strings = strings.map(s => s || '');
-	const maxPixelWidth = Math.max(...strings.map(s => approxTextWidth(s)));
+	let maxPixelWidth = 0;
+	for (let i = 0; i < strings.length; i ++) {
+		const pixelWidth = approxTextWidth(strings[i]);
+		if (pixelWidth > maxPixelWidth) maxPixelWidth = pixelWidth;
+	};
 	// 37.8 pixels per cm, and add a bit in case the width is inaccurate:
 	return ((maxPixelWidth / 37.8) + 0.5).toFixed(2);
 }

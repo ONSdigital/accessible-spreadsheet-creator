@@ -1,9 +1,9 @@
 {
-	"name": "accessible-spreadsheet-creator",
-	"version": "0.0.22",
+	"name": "@onsvisual/accessible-spreadsheet-creator",
+	"version": "0.0.23",
 	"description": "A simple module for creating accessible .ods files",
 	"license": "MIT",
-	"repository": "jtrim-ons/accessible-spreadsheet-creator",
+	"repository": "ONSdigital/accessible-spreadsheet-creator",
 	"author": {
 		"name": "James Trimble",
 		"email": "jtrim.ons@gmail.com"
