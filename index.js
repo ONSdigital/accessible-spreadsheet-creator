@@ -2,7 +2,7 @@ import odsTemplate from './template-spreadsheets/template.js';
 import approxTextWidth from './approx-text-width.js';
 import schema from './schema.js';
 import Ajv from 'ajv';
-import Mustache from 'mustache';
+import Handlebars from 'handlebars';
 
 let schemaValidator = null;
 
@@ -240,6 +240,5 @@ export default function createZip(odsData) {
 			delete column.valuesFormatted;
 		}
 	}
-
-	return odsTemplate.map(item => ({filename: item.filename, contents: Mustache.render(item.contents, mustacheData)}));
+	return odsTemplate.map(item => ({filename: item.filename, contents: Handlebars.compile(item.contents)(mustacheData)}));
 }
