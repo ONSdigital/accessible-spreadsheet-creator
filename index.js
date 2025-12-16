@@ -3,6 +3,9 @@ import approxTextWidth from './approx-text-width.js';
 import schema from './schema.js';
 import Ajv from 'ajv';
 import Handlebars from 'handlebars';
+import { Buffer as JSBuf} from 'buffer';
+
+Buffer = !Buffer ? JSBuf : Buffer; // Polyfill for Node.js Buffer in browser
 
 let schemaValidator = null;
 
@@ -175,6 +178,42 @@ function oneTableMessage(hasNotes) {
 		: message;
 }
 
+function templateToChunks(template) {
+	let parts = template.split("{{#sheets}}");
+	const chunks = [{type: "other", content: parts.shift()}];
+	while (parts.length > 0) {
+		const subParts = parts.shift().split("{{/sheets}}");
+		chunks.push({type: "sheets", content: subParts[0]});
+		if (subParts[1]) chunks.push({type: "other", content: subParts[1]});
+	}
+	return chunks;
+};
+
+function chunkToBuffer(chunk, data) {
+	const renderedChunk = Handlebars.compile(chunk)(data);
+	return Buffer.from(renderedChunk);
+}
+
+function renderItem(item, data) {
+	const chunks = templateToChunks(item.contents);
+
+	let buffer = Buffer.from("");
+	for (const chunk of chunks) {
+		if (chunk.type === "sheets") {
+			for (const sheet of data.sheets) {
+				const newBuf = chunkToBuffer(chunk.content, sheet);
+				buffer = Buffer.concat([buffer, newBuf]);
+			}
+		} else {
+			const newBuf = chunkToBuffer(chunk.content, data);
+			buffer = Buffer.concat([buffer, newBuf]);
+		}
+	}
+	
+	return {filename: item.filename, contents: buffer};
+}
+
+
 export default function createZip(odsData) {
 	if (!schemaValidator) {
 		schemaValidator = new Ajv().compile(schema);
@@ -240,5 +279,5 @@ export default function createZip(odsData) {
 			delete column.valuesFormatted;
 		}
 	}
-	return odsTemplate.map(item => ({filename: item.filename, contents: Handlebars.compile(item.contents)(mustacheData)}));
+	return odsTemplate.map((item) => renderItem(item, mustacheData));
 }

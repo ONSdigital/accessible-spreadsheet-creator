@@ -67,26 +67,26 @@ const odsData = {
 				{
 					style: 'text',
 					heading: 'Category',
-					values: [
+					values: Array(200000).fill([
 						'First category',
 						'Second category',
 						'Really long looooooong category'
-					]
+					]).flat()
 				},
 				{
 					style: 'number_1dp',
 					heading: 'Selected group',
-					values: [
+					values: Array(200000).fill([
 						12.3, 12.3, 78.9
-					]
+					]).flat()
 				},
 				{
 					style: 'number_2dp',
 					heading: 'England and Wales with a really long title\n(units)',
 					allowNulls: true,
-					values: [
+					values: Array(200000).fill([
 						45.6, null, 45.678
-					]
+					]).flat()
 				},
 			]
 		},
@@ -97,6 +97,7 @@ for (let i=3; i<6; i++) {
 	odsData.coverSheetContents.push('Here is a cell with lots and lots and lots of words. '.repeat(i * 3));
 }
 
+console.log("generating spreadsheet...");
 const zipFiles = accessibleSpreadsheetCreator(odsData);
 
 const zip = new JSZip();
