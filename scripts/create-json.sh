@@ -17,4 +17,6 @@ for f in mimetype META-INF/manifest.xml content.xml meta.xml styles.xml; do
 done
 
 echo ']';
-) > template-spreadsheets/template.js
+) > template-spreadsheets/template-raw.js
+
+npm run compile-template

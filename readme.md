@@ -112,7 +112,7 @@ The following notes are for developing the `accessible-spreadsheet-creator` pack
 - The original template spreadsheet, created in LibreOffice, is `template-spreadsheets/download-template.ods`.
 - Run `scripts/unzip-spreadsheet.sh` to unzip this into `template-spreadsheets/unzipped-formatted/`.
 - Run `scripts/apply-patch.sh` to create `template-spreadsheets/mustache`.
-- Run `scripts/create-json.sh` to create a JavaScript object with filenames as keys and these templates as values.
+- Run `scripts/create-json.sh` to create a JavaScript object with filenames and precompiled Handlebars templates.
 
 ### How to modify the spreadsheet and template
 

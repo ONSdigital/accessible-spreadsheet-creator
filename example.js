@@ -67,16 +67,16 @@ const odsData = {
 				{
 					style: 'text',
 					heading: 'Category',
-					values: Array(200000).fill([
+					values: Array(1000).fill([
 						'First category',
 						'Second category',
-						'Really long looooooong category'
+						'Third looooooonger category'
 					]).flat()
 				},
 				{
 					style: 'number_1dp',
 					heading: 'Selected group',
-					values: Array(200000).fill([
+					values: Array(1000).fill([
 						12.3, 12.3, 78.9
 					]).flat()
 				},
@@ -84,7 +84,7 @@ const odsData = {
 					style: 'number_2dp',
 					heading: 'England and Wales with a really long title\n(units)',
 					allowNulls: true,
-					values: Array(200000).fill([
+					values: Array(1000).fill([
 						45.6, null, 45.678
 					]).flat()
 				},

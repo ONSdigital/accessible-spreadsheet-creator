@@ -3,9 +3,7 @@ import approxTextWidth from './approx-text-width.js';
 import schema from './schema.js';
 import Ajv from 'ajv';
 import Handlebars from 'handlebars';
-import { Buffer as JSBuf} from 'buffer';
-
-Buffer = !Buffer ? JSBuf : Buffer; // Polyfill for Node.js Buffer in browser
+import BigString from './big-string.js';
 
 let schemaValidator = null;
 
@@ -178,39 +176,45 @@ function oneTableMessage(hasNotes) {
 		: message;
 }
 
-function templateToChunks(template) {
-	let parts = template.split("{{#sheets}}");
-	const chunks = [{type: "other", content: parts.shift()}];
-	while (parts.length > 0) {
-		const subParts = parts.shift().split("{{/sheets}}");
-		chunks.push({type: "sheets", content: subParts[0]});
-		if (subParts[1]) chunks.push({type: "other", content: subParts[1]});
-	}
-	return chunks;
-};
-
-function chunkToBuffer(chunk, data) {
-	const renderedChunk = Handlebars.compile(chunk)(data);
-	return Buffer.from(renderedChunk);
+function renderChunk(contents, data) {
+	const render = Handlebars.template(contents);
+	return render(data);
 }
 
 function renderItem(item, data) {
-	const chunks = templateToChunks(item.contents);
-
-	let buffer = Buffer.from("");
-	for (const chunk of chunks) {
-		if (chunk.type === "sheets") {
+	if (item.type === "string")
+		return {filename: item.filename, contents: item.contents};
+	if (item.type === "template") {
+		return {filename: item.filename, contents: renderChunk(item.contents, data)};
+	}
+	let string = new BigString();
+	for (const chunk of item.contents) {
+		if (chunk.type === "sheets" && chunk.rows) {
 			for (const sheet of data.sheets) {
-				const newBuf = chunkToBuffer(chunk.content, sheet);
-				buffer = Buffer.concat([buffer, newBuf]);
+				string.append(renderChunk(chunk.header || chunk.contents, sheet));
+
+				// Table rows are rendered in smaller chunks to avoid a string overflow
+				const renderRows = Handlebars.template(chunk.rows);
+				const maxRows = 10000; // Only render up to 10,000 rows at a time
+				let i = 0;
+				while (i < sheet.rows.length) {
+					const rows = sheet.rows.slice(i, i + maxRows);
+					string.append(renderRows({ rows }));
+					i += maxRows;
+				}
+				
+				string.append(renderChunk(chunk.footer, sheet));
+			}
+		} else if (chunk.type === "sheets") {
+			for (const sheet of data.sheets) {
+				string.append(renderChunk(chunk.contents, sheet));
 			}
 		} else {
-			const newBuf = chunkToBuffer(chunk.content, data);
-			buffer = Buffer.concat([buffer, newBuf]);
+			const render = Handlebars.template(chunk.contents);
+			string.append(render(data));
 		}
 	}
-	
-	return {filename: item.filename, contents: buffer};
+	return {filename: item.filename, contents: string.toBuffer()};
 }
 
 

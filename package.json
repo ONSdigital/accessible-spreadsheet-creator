@@ -1,6 +1,6 @@
 {
 	"name": "@onsvisual/accessible-spreadsheet-creator",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "A simple module for creating accessible .ods files",
 	"license": "MIT",
 	"repository": "ONSdigital/accessible-spreadsheet-creator",
@@ -14,6 +14,7 @@
 		"node": ">=16"
 	},
 	"scripts": {
+		"compile-template": "node ./scripts/compile-template.js",
 		"test": "xo && ava",
 		"test-schema": "npx ajv -s ods-data.schema.json -d example-input.json",
 		"make-schema-docs": "npx jsonschema2md -d . -o docs -x -"
@@ -22,6 +23,7 @@
 		"index.js",
 		"schema.js",
 		"approx-text-width.js",
+		"big-string.js",
 		"template-spreadsheets/template.js"
 	],
 	"keywords": [],
