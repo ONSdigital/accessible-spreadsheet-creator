@@ -3,7 +3,7 @@
 ## How to install it
 
 ```sh
-npm install accessible-spreadsheet-creator
+npm install @onsvisual/accessible-spreadsheet-creator
 ```
 
 ## How to use it
@@ -13,7 +13,7 @@ An example using Node:
 ```js
 import fs from "node:fs";
 import JSZip from "jszip";
-import accessibleSpreadsheetCreator from "accessible-spreadsheet-creator";
+import accessibleSpreadsheetCreator from "@onsvisual/accessible-spreadsheet-creator";
 
 const odsData = {
 	coverSheetTitle: "Some pretend data",
@@ -101,11 +101,11 @@ zip
 ```
 
 The documentation for the spreadsheet object passed to `accessibleSpreadsheetCreator()`
-is [here](https://github.com/jtrim-ons/accessible-spreadsheet-creator/blob/main/docs/README.md).
+is [here](https://github.com/ONSdigital/accessible-spreadsheet-creator/blob/main/docs/README.md).
 
 ## Developing the package
 
-The following notes are for developing the `accessible-spreadsheet-creator` package.
+The following notes are for developing the `@onsvisual/accessible-spreadsheet-creator` package.
 
 ### How to build it
 
