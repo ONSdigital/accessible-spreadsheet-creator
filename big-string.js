@@ -15,7 +15,7 @@ export default class BigString {
         return this.calcLength();
     }
     append(string) {
-        if (this.calcLength() > maxStringLength) this.consolidate();
+        if (this.calcLength() + string.length > maxStringLength) this.consolidate();
         this.string += string;
     }
     consolidate() {
