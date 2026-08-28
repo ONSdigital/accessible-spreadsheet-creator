@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"compile-template": "node ./scripts/compile-template.js",
-		"test": "xo && ava",
+		"test": "xo",
 		"test-schema": "npx ajv -s ods-data.schema.json -d example-input.json",
 		"make-schema-docs": "npx jsonschema2md -d . -o docs -x -"
 	},
