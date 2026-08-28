@@ -1,8 +1,8 @@
+import Ajv from 'ajv';
+import Handlebars from 'handlebars';
 import odsTemplate from './template-spreadsheets/template.js';
 import approxTextWidth from './approx-text-width.js';
 import schema from './schema.js';
-import Ajv from 'ajv';
-import Handlebars from 'handlebars';
 import BigString from './big-string.js';
 
 let schemaValidator = null;
@@ -11,7 +11,7 @@ function intToLetter(i) {
 	return String.fromCodePoint('A'.codePointAt(0) + i);
 }
 
-function cellRef(col, row) {
+function cellReference(col, row) {
 	const zeroBasedCol = col - 1;
 	if (zeroBasedCol < 26) {
 		return intToLetter(zeroBasedCol) + row;
@@ -37,7 +37,9 @@ function formatValues(values, style, allowNulls) {
 		return values.map(d => (
 			d === null
 				? {isEmptyNumeric: true, style}
-				: {isNumeric: true, rawValue: d, displayValue: d.toLocaleString('en-GB'), style}
+				: {
+					isNumeric: true, rawValue: d, displayValue: d.toLocaleString('en-GB'), style,
+				}
 		));
 	}
 
@@ -45,7 +47,9 @@ function formatValues(values, style, allowNulls) {
 		return values.map(d => (
 			d === null
 				? {isEmptyNumeric: true, style}
-				: {isNumeric: true, rawValue: d, displayValue: d.toFixed(1), style}
+				: {
+					isNumeric: true, rawValue: d, displayValue: d.toFixed(1), style,
+				}
 		));
 	}
 
@@ -53,7 +57,9 @@ function formatValues(values, style, allowNulls) {
 		return values.map(d => (
 			d === null
 				? {isEmptyNumeric: true, style}
-				: {isNumeric: true, rawValue: d, displayValue: d.toFixed(2), style}
+				: {
+					isNumeric: true, rawValue: d, displayValue: d.toFixed(2), style,
+				}
 		));
 	}
 
@@ -64,7 +70,7 @@ function visitNotes(sheet, visitString) {
 	visitString(sheet.sheetName, t => {
 		sheet.sheetName = t;
 	});
-	for (let i=0; i<sheet.sheetIntroText.length; i++) {
+	for (let i = 0; i < sheet.sheetIntroText.length; i++) {
 		visitString(sheet.sheetIntroText[i], t => {
 			sheet.sheetIntroText[i] = t;
 		});
@@ -76,7 +82,7 @@ function visitNotes(sheet, visitString) {
 		});
 
 		if (column.style === 'text') {
-			for (let i=0; i<column.values.length; i++) {
+			for (let i = 0; i < column.values.length; i++) {
 				visitString(column.values[i], t => {
 					column.values[i] = t;
 				});
@@ -90,7 +96,7 @@ function processNotes(sourceNotes, sheets) {
 		return [];
 	}
 
-	const noteRegExp = /\[\[[^\]]+\]\]/g;
+	const noteRegExp = /\[\[[^\]]+]]/g;
 
 	let notes = sourceNotes.map(({name, text}) => ({name, text, used: false}));
 	const notesMap = new Map(notes.map(note => [`[[${note.name}]]`, note]));
@@ -101,21 +107,23 @@ function processNotes(sourceNotes, sheets) {
 		visitNotes(sheet, t => {
 			// Don't replace [[note_id]] yet; just determine which notes should be on the notes
 			// sheet and which sheets have notes.
-			for (const noteRef of t.match(noteRegExp) || []) {
-				notesMap.get(noteRef).used = true;
+			for (const noteReference of t.match(noteRegExp) || []) {
+				notesMap.get(noteReference).used = true;
 				sheet.hasNotes = true;
 			}
 		});
 	}
 
 	notes = notes.filter(n => n.used);
-	notes.forEach((n, i) => n.name = `[note ${i + 1}]`);
+	for (const [i, n] of notes.entries()) {
+		n.name = `[note ${i + 1}]`;
+	}
 
 	for (const sheet of sheets) {
 		if (sheet.hasNotes) {
 			const matchReplacer = match => notesMap.get(match).name;
 			visitNotes(sheet, (t, tSetterCallback) => {
-				tSetterCallback(t.replace(noteRegExp, matchReplacer));
+				tSetterCallback(t.replaceAll(noteRegExp, matchReplacer));
 			});
 		}
 	}
@@ -126,17 +134,20 @@ function processNotes(sourceNotes, sheets) {
 function columnWidth(strings) {
 	strings = strings.map(s => s || '');
 	let maxPixelWidth = 0;
-	for (let i = 0; i < strings.length; i ++) {
-		const pixelWidth = approxTextWidth(strings[i]);
-		if (pixelWidth > maxPixelWidth) maxPixelWidth = pixelWidth;
-	};
+	for (const string_ of strings) {
+		const pixelWidth = approxTextWidth(string_);
+		if (pixelWidth > maxPixelWidth) {
+			maxPixelWidth = pixelWidth;
+		}
+	}
+
 	// 37.8 pixels per cm, and add a bit in case the width is inaccurate:
 	return ((maxPixelWidth / 37.8) + 0.5).toFixed(2);
 }
 
-function calcRowCount(text) {
+function calculateRowCount(text) {
 	const tokens = text.split(' ');
-	const columnWidth = 15.45 * 37.8; // cm * pixels per cm
+	const columnWidth = 15.45 * 37.8; // Cm * pixels per cm
 	const spaceWidth = approxTextWidth(' ');
 	let rowCount = 1;
 	let rowWidth = approxTextWidth(tokens[0]);
@@ -155,22 +166,24 @@ function calcRowCount(text) {
 function makeCoverSheetContents(coverSheetMarkdown) {
 	return coverSheetMarkdown
 		.flatMap(d => d.split('\n'))
-		.map((item, i) => {
+		.map((item, _i) => {
 			if (item.startsWith('## ')) {
 				return {isSubtitle: true, text: item.slice(3)};
 			}
 
-			if (/^\[.*\]\(.*\)$/.test(item)) {
+			if (/^\[.*]\(.*\)$/.test(item)) {
 				const tokens = item.slice(1, -1).split('](');
-				return {isHyperlink: true, text: tokens[0], href: tokens[1], rowCount: calcRowCount('.')};
+				return {
+					isHyperlink: true, text: tokens[0], href: tokens[1], rowCount: calculateRowCount('.'),
+				};
 			}
 
-			return {isText: true, text: item, rowCount: calcRowCount(item)};
+			return {isText: true, text: item, rowCount: calculateRowCount(item)};
 		});
 }
 
 function oneTableMessage(hasNotes) {
-	let message = 'This worksheet contains one table.';
+	const message = 'This worksheet contains one table.';
 	return hasNotes
 		? message + ' Some cells refer to notes, which can be found on the notes worksheet.'
 		: message;
@@ -182,30 +195,33 @@ function renderChunk(contents, data) {
 }
 
 function renderItem(item, data) {
-	if (item.type === "string")
+	if (item.type === 'string') {
 		return {filename: item.filename, contents: item.contents};
-	if (item.type === "template") {
+	}
+
+	if (item.type === 'template') {
 		return {filename: item.filename, contents: renderChunk(item.contents, data)};
 	}
-	let string = new BigString();
+
+	const string = new BigString();
 	for (const chunk of item.contents) {
-		if (chunk.type === "sheets" && chunk.rows) {
+		if (chunk.type === 'sheets' && chunk.rows) {
 			for (const sheet of data.sheets) {
 				string.append(renderChunk(chunk.header || chunk.contents, sheet));
 
 				// Table rows are rendered in smaller chunks to avoid a string overflow
 				const renderRows = Handlebars.template(chunk.rows);
-				const maxRows = 10000; // Only render up to 10,000 rows at a time
+				const maxRows = 10_000; // Only render up to 10,000 rows at a time
 				let i = 0;
 				while (i < sheet.rows.length) {
 					const rows = sheet.rows.slice(i, i + maxRows);
-					string.append(renderRows({ rows }));
+					string.append(renderRows({rows}));
 					i += maxRows;
 				}
-				
+
 				string.append(renderChunk(chunk.footer, sheet));
 			}
-		} else if (chunk.type === "sheets") {
+		} else if (chunk.type === 'sheets') {
 			for (const sheet of data.sheets) {
 				string.append(renderChunk(chunk.contents, sheet));
 			}
@@ -214,14 +230,12 @@ function renderItem(item, data) {
 			string.append(render(data));
 		}
 	}
+
 	return {filename: item.filename, contents: string.toBuffer()};
 }
 
-
 export default function createZip(odsData) {
-	if (!schemaValidator) {
-		schemaValidator = new Ajv().compile(schema);
-	}
+	schemaValidator ||= new Ajv().compile(schema);
 
 	const valid = schemaValidator(odsData);
 	if (!valid) {
@@ -231,35 +245,35 @@ export default function createZip(odsData) {
 
 	const mustacheData = {
 		coverSheetTitle: odsData.coverSheetTitle,
-		firstTocCell: cellRef(1, 3),
-		lastTocCell: cellRef(2, 3 + odsData.sheets.length),
+		firstTocCell: cellReference(1, 3),
+		lastTocCell: cellReference(2, 3 + odsData.sheets.length),
 		coverSheetContents: makeCoverSheetContents(odsData.coverSheetContents),
-		sheets: JSON.parse(JSON.stringify(odsData.sheets)),
+		sheets: structuredClone(odsData.sheets),
 	};
 
 	mustacheData.coverSheetRowStyles = [
 		...new Set(mustacheData.coverSheetContents.map(d => d.rowCount).filter(Boolean)),
 	].map(d => ({
 		styleName: 'coverSheetRowStyle_' + d,
-		rowHeightCm: d * 0.53 + 0.4 // Found by trial and error
+		rowHeightCm: (d * 0.53) + 0.4, // Found by trial and error
 	}));
 
 	mustacheData.notes = processNotes(odsData.notes, mustacheData.sheets);
 	if (mustacheData.notes.length > 0) {
 		mustacheData.hasNotes = true;
-		mustacheData.firstNotesTableCell = cellRef(1, 3);
-		mustacheData.lastNotesTableCell = cellRef(2, 3 + mustacheData.notes.length);
+		mustacheData.firstNotesTableCell = cellReference(1, 3);
+		mustacheData.lastNotesTableCell = cellReference(2, 3 + mustacheData.notes.length);
 	}
 
 	mustacheData.tableCount = mustacheData.sheets.length + 2 + mustacheData.hasNotes;
 
-	for (let i=0; i<mustacheData.sheets.length; i++) {
+	for (let i = 0; i < mustacheData.sheets.length; i++) {
 		const sheet = mustacheData.sheets[i];
 		sheet.sheetNumber = i + 1;
 		sheet.sheetIntroText = [oneTableMessage(sheet.hasNotes), ...(sheet.sheetIntroText || [])];
-		sheet.introText = sheet.sheetIntroText.map((t, j) => ({text: t, isLastIntroRow: j === sheet.sheetIntroText.length - 1}));
-		sheet.firstTableCell = cellRef(1, 2 + sheet.sheetIntroText.length);
-		sheet.lastTableCell = cellRef(sheet.columns.length, 2 + sheet.columns[0].values.length + sheet.sheetIntroText.length);
+		sheet.introText = sheet.sheetIntroText.map((t, index) => ({text: t, isLastIntroRow: index === sheet.sheetIntroText.length - 1}));
+		sheet.firstTableCell = cellReference(1, 2 + sheet.sheetIntroText.length);
+		sheet.lastTableCell = cellReference(sheet.columns.length, 2 + sheet.columns[0].values.length + sheet.sheetIntroText.length);
 
 		for (const column of sheet.columns) {
 			column.valuesFormatted = formatValues(column.values, column.style, column.allowNulls);
@@ -268,13 +282,13 @@ export default function createZip(odsData) {
 		}
 
 		sheet.rows = [];
-		for (let j=0; j<sheet.columns[0].values.length; j++) {
-			sheet.rows.push({cellsInRow: sheet.columns.map(c => c.valuesFormatted[j])});
+		for (let index = 0; index < sheet.columns[0].values.length; index++) {
+			sheet.rows.push({cellsInRow: sheet.columns.map(c => c.valuesFormatted[index])});
 		}
 
-		sheet.columnStyles = sheet.columns.map((column, j) => {
+		sheet.columnStyles = sheet.columns.map((column, index) => {
 			const widthCm = Math.max(2.4, columnWidth(column.valuesFormatted.map(d => d.displayValue)));
-			return {name: 'colStyle' + i + '_' + j, widthCm};
+			return {name: 'colStyle' + i + '_' + index, widthCm};
 		});
 
 		for (const column of sheet.columns) {
@@ -283,5 +297,6 @@ export default function createZip(odsData) {
 			delete column.valuesFormatted;
 		}
 	}
-	return odsTemplate.map((item) => renderItem(item, mustacheData));
+
+	return odsTemplate.map(item => renderItem(item, mustacheData));
 }

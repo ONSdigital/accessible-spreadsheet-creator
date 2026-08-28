@@ -11,7 +11,7 @@
 	"type": "module",
 	"exports": "./index.js",
 	"engines": {
-		"node": ">=16"
+		"node": ">=18"
 	},
 	"scripts": {
 		"compile-template": "node ./scripts/compile-template.js",
@@ -38,5 +38,14 @@
 		"ajv-cli": "^0.6.0",
 		"ava": "^6.4.1",
 		"xo": "^0.60.0"
+	},
+	"xo": {
+		"rules": {
+			"max-params": "off"
+		},
+		"ignores": [
+			"template-spreadsheets/template.js",
+			"template-spreadsheets/template-raw.js"
+		]
 	}
 }

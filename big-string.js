@@ -6,7 +6,7 @@ const maxStringLength = 268_435_440;
 export default class BigString {
 	constructor(string = '') {
 		this.string = string;
-		this.buffer = new Buf.from('');
+		this.buffer = Buf.from('');
 	}
 
 	calcLength() {
@@ -18,7 +18,10 @@ export default class BigString {
 	}
 
 	append(string) {
-		if (this.calcLength() + string.length > maxStringLength) this.consolidate();
+		if (this.calcLength() + string.length > maxStringLength) {
+			this.consolidate();
+		}
+
 		this.string += string;
 	}
 
@@ -28,7 +31,10 @@ export default class BigString {
 	}
 
 	toString() {
-		if (this.calcLength() > maxStringLength) throw new Error(`String longer than ${maxStringLength} characters.`);
+		if (this.calcLength() > maxStringLength) {
+			throw new Error(`String longer than ${maxStringLength} characters.`);
+		}
+
 		this.consolidate();
 		return this.buffer.toString();
 	}

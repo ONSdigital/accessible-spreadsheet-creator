@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import JSZip from 'jszip';
 import accessibleSpreadsheetCreator from './index.js';
-//import test from 'ava';
+// Import test from 'ava';
 
-//test('main', t => {
+// test('main', t => {
 //	t.throws(() => {
 //		unicornFun(123);
 //	}, {
@@ -12,7 +12,7 @@ import accessibleSpreadsheetCreator from './index.js';
 //	});
 //
 //	t.is(unicornFun('unicorns'), 'unicorns & rainbows');
-//});
+// });
 
 const odsData = {
 	coverSheetTitle: 'Some pretend data',
@@ -42,23 +42,23 @@ const odsData = {
 					values: [
 						'First category [[note_1]]',
 						'Second category',
-					]
+					],
 				},
 				{
 					style: 'number_with_commas',
 					heading: 'Selected group',
 					values: [
-						12_345, 1_234_567
-					]
+						12_345, 1_234_567,
+					],
 				},
 				{
 					style: 'number_1dp',
 					heading: 'England and Wales with a really long title',
 					values: [
-						45.6, 45.6
-					]
+						45.6, 45.6,
+					],
 				},
-			]
+			],
 		},
 		{
 			sheetName: 'Ethnicity',
@@ -67,37 +67,37 @@ const odsData = {
 				{
 					style: 'text',
 					heading: 'Category',
-					values: Array(1000).fill([
+					values: Array.from({length: 1000}).fill([
 						'First category',
 						'Second category',
-						'Third looooooonger category'
-					]).flat()
+						'Third looooooonger category',
+					]).flat(),
 				},
 				{
 					style: 'number_1dp',
 					heading: 'Selected group',
-					values: Array(1000).fill([
-						12.3, 12.3, 78.9
-					]).flat()
+					values: Array.from({length: 1000}).fill([
+						12.3, 12.3, 78.9,
+					]).flat(),
 				},
 				{
 					style: 'number_2dp',
 					heading: 'England and Wales with a really long title\n(units)',
 					allowNulls: true,
-					values: Array(1000).fill([
-						45.6, null, 45.678
-					]).flat()
+					values: Array.from({length: 1000}).fill([
+						45.6, null, 45.678,
+					]).flat(),
 				},
-			]
+			],
 		},
 	],
 };
 
-for (let i=3; i<6; i++) {
+for (let i = 3; i < 6; i++) {
 	odsData.coverSheetContents.push('Here is a cell with lots and lots and lots of words. '.repeat(i * 3));
 }
 
-console.log("generating spreadsheet...");
+console.log('generating spreadsheet...');
 const zipFiles = accessibleSpreadsheetCreator(odsData);
 
 const zip = new JSZip();
