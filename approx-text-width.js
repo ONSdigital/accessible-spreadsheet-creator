@@ -1,7 +1,7 @@
 export default function approxTextWidth(text) {
 	let width = 0;
 	for (const c of text) {
-		width += c in characterWidths12ptArial ? characterWidths12ptArial[c] : characterWidths12ptArial['AVERAGE'];
+		width += c in characterWidths12ptArial ? characterWidths12ptArial[c] : characterWidths12ptArial.AVERAGE;
 	}
 
 	return width;
@@ -104,4 +104,3 @@ const characterWidths12ptArial = {
 	'~': 9.33,
 	AVERAGE: 8.472,
 };
-
